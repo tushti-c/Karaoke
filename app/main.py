@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -254,3 +254,8 @@ def room_page(code: str):
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/api/debug")
+def debug(request: Request):
+    return {"path": request.scope.get("path"), "root_path": request.scope.get("root_path"), "raw_path": str(request.scope.get("raw_path"))}
