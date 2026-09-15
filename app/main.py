@@ -117,13 +117,20 @@ async def search(q: str = Query(min_length=1, max_length=100), limit: int = Quer
     return {"tracks": [track_out(t) for t in data.get("data", [])]}
 
 
+PLAYLIST_QUERIES = ["karaoke hits", "sing along anthems", "party hits", "80s hits", "90s hits", "00s hits"]
+PLAYLIST_SKIP = ("lofi", "lo-fi", "sleep", "relax", "study", "piano", "instrumental", "calm", "focus", "meditat")
+
+
 @app.get("/api/playlists")
 async def playlists():
-    top = await deezer("/chart/0/playlists", limit=12)
-    karaoke = await deezer("/search/playlist", q="karaoke hits", limit=12)
+    found = []
+    for q in PLAYLIST_QUERIES:
+        found += (await deezer("/search/playlist", q=q, limit=5)).get("data", [])
+    found += (await deezer("/chart/0/playlists", limit=20)).get("data", [])
     seen, out = set(), []
-    for p in karaoke.get("data", []) + top.get("data", []):
-        if p["id"] in seen or p.get("nb_tracks", 0) < 10:
+    for p in found:
+        title = p["title"].lower()
+        if p["id"] in seen or p.get("nb_tracks", 0) < 15 or any(s in title for s in PLAYLIST_SKIP):
             continue
         seen.add(p["id"])
         out.append(
