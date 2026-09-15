@@ -256,6 +256,13 @@ def room_page(code: str):
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.get("/api/debug")
-def debug(request: Request):
-    return {"path": request.scope.get("path"), "root_path": request.scope.get("root_path"), "raw_path": str(request.scope.get("raw_path"))}
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
+@app.exception_handler(StarletteHTTPException)
+async def debug_404(request: Request, exc: StarletteHTTPException):
+    detail = {"detail": exc.detail}
+    if exc.status_code == 404:
+        detail["debug"] = {k: str(request.scope.get(k)) for k in ("path", "root_path", "raw_path", "method")}
+    return JSONResponse(detail, status_code=exc.status_code)
