@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Karaoke Song Board</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">🎤 <span id="roomName">Karaoke Board</span> <small id="roomCode"></small></div>
+      <div class="row">
+        <button id="share" class="pill">🔗 Share link</button>
+        <button id="nameBtn" class="pill">👤 <span id="nameLabel">Set your name</span></button>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <section id="quiz" class="card hidden">
+      <div class="progress"><div id="qbar" style="width:0%"></div></div>
+      <div class="muted" id="qcount"></div>
+      <h2 id="qtext" style="margin-top:6px"></h2>
+      <div id="qopts" class="options"></div>
+      <div class="row" style="margin-top:16px">
+        <button id="qskip" class="btn ghost sm">Skip quiz — pick my genre</button>
+      </div>
+    </section>
+
+    <!-- PICK GENRE MANUALLY -->
+    <section id="pick" class="card hidden">
+      <h2>What's your vibe?</h2>
+      <p class="muted" style="margin-top:-6px">Pick the genre that fits you best. You can change this any time.</p>
+      <div id="genreGrid" class="genre-grid"></div>
+      <div class="row" style="margin-top:16px">
+        <button id="pickCancel" class="btn ghost sm">Cancel</button>
+        <div class="spacer"></div>
+        <button id="retake" class="btn secondary sm">Retake quiz</button>
+      </div>
+    </section>
+
+    <!-- MAIN -->
+    <section id="main" class="hidden">
+      <div class="taste">
+        <div class="emoji" id="tEmoji"></div>
+        <div style="flex:1">
+          <div class="muted" style="font-size:12px">Your vibe</div>
+          <b id="tLabel"></b>
+          <div class="muted" id="tBlurb" style="font-size:13px"></div>
+        </div>
+        <button id="changeTaste" class="btn secondary sm">Not quite? Change</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="board">🏆 Leaderboard <span id="lbCount" class="badge hidden"></span></button>
+        <button class="tab" data-tab="suggested">✨ For you</button>
+        <button class="tab" data-tab="playlists">📚 Playlists</button>
+        <button class="tab" data-tab="search">➕ Add a song</button>
+      </div>
+
+      <div id="tab-board">
+        <div id="lb" class="lb"></div>
+        <div id="lbEmpty" class="empty hidden">No songs yet. Be the first — check <b>For you</b> or <b>Add a song</b>.</div>
+      </div>
+
+      <div id="tab-suggested" class="hidden">
+        <p class="muted" id="sugIntro"></p>
+        <div id="sug" class="tracks"></div>
+      </div>
+
+      <div id="tab-playlists" class="hidden">
+        <div id="plList">
+          <p class="muted">Browse curated playlists and add anything that catches your ear.</p>
+          <div id="pls" class="playlists"></div>
+        </div>
+        <div id="plDetail" class="hidden">
+          <div class="row" style="margin-bottom:12px">
+            <button id="plBack" class="btn ghost sm">← All playlists</button>
+            <h2 id="plTitle" style="margin:0"></h2>
+          </div>
+          <div id="plTracks" class="tracks"></div>
+        </div>
+      </div>
+
+      <div id="tab-search" class="hidden">
+        <div class="row" style="margin-bottom:12px">
+          <input id="q" class="field" style="flex:1" placeholder="Search any song or artist…" autocomplete="off">
+        </div>
+        <div id="results" class="tracks"></div>
+        <div class="card section">
+          <h2>Can't find it?</h2>
+          <div class="row">
+            <input id="mTitle" class="field" style="flex:2; min-width:160px" placeholder="Song title" maxlength="200">
+            <input id="mArtist" class="field" style="flex:2; min-width:160px" placeholder="Artist" maxlength="200">
+            <button id="mAdd" class="btn">Add</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <audio id="audio"></audio>
+  <script src="/static/room.js"></script>
+</body>
+</html>

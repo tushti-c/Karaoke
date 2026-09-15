@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Karaoke Song Board</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar"><div class="brand">🎤 Karaoke Board</div></div>
+
+    <h1>Pick the setlist together.</h1>
+    <p class="lead">Create a board, share the link. Everyone adds songs they'd love to hear, seconds the ones they like, and the crowd's favourites rise to the top.</p>
+
+    <div class="card">
+      <h2>Start a new board</h2>
+      <div class="row">
+        <input id="name" class="field" style="flex:1; min-width: 200px" placeholder="Board name, e.g. Sam's 30th" maxlength="60">
+        <button id="create" class="btn">Create &amp; get link</button>
+      </div>
+      <p id="missing" class="muted hidden" style="margin-top:14px">That board link doesn't exist (or expired). Create a new one above.</p>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>Have a code?</h2>
+      <div class="row">
+        <input id="code" class="field" style="flex:1; min-width: 200px" placeholder="6-letter code" maxlength="6">
+        <button id="join" class="btn secondary">Join</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (new URLSearchParams(location.search).get('missing')) document.getElementById('missing').classList.remove('hidden');
+    document.getElementById('create').onclick = async () => {
+      const name = document.getElementById('name').value.trim() || 'Karaoke Night';
+      const r = await fetch('/api/rooms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      const j = await r.json();
+      location.href = '/r/' + j.code;
+    };
+    const go = () => { const c = document.getElementById('code').value.trim().toLowerCase(); if (c) location.href = '/r/' + c; };
+    document.getElementById('join').onclick = go;
+    document.getElementById('code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  </script>
+</body>
+</html>
