@@ -4,12 +4,12 @@ import time
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from .db import db, init_db
+from .db import IS_PG, db, init_db
 from .taste import GENRES, QUIZ, score_quiz
 
 DEEZER = "https://api.deezer.com"
@@ -18,7 +18,25 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 app = FastAPI(title="Karaoke Song Board")
 
 
-init_db()
+DB_ERROR: str | None = None
+try:
+    init_db()
+except Exception as e:  # keep the app importable so /api/health can explain the problem
+    DB_ERROR = f"{type(e).__name__}: {e}"
+
+
+@app.get("/api/health")
+def health():
+    status = {"database": "postgres" if IS_PG else "sqlite", "ok": DB_ERROR is None, "error": DB_ERROR}
+    if DB_ERROR is None:
+        try:
+            with db() as conn:
+                conn.execute("SELECT 1").fetchone()
+        except Exception as e:
+            status.update(ok=False, error=f"{type(e).__name__}: {e}")
+    if not IS_PG:
+        status["hint"] = "DATABASE_URL is not set; on Vercel boards will not persist."
+    return status
 
 _cache: dict[str, tuple[float, object]] = {}
 CACHE_TTL = 600
@@ -254,15 +272,3 @@ def room_page(code: str):
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-
-from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-
-
-@app.exception_handler(StarletteHTTPException)
-async def debug_404(request: Request, exc: StarletteHTTPException):
-    detail = {"detail": exc.detail}
-    if exc.status_code == 404:
-        detail["debug"] = {k: str(request.scope.get(k)) for k in ("path", "root_path", "raw_path", "method")}
-    return JSONResponse(detail, status_code=exc.status_code)
