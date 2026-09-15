@@ -20,6 +20,7 @@ Uses a local SQLite file in `data/` unless `DATABASE_URL` (Postgres) is set.
 1. Create a free Postgres database at https://neon.tech and copy its connection string.
 2. Import this repo at https://vercel.com/new.
 3. In the Vercel project settings, add an environment variable
-   `DATABASE_URL` = the Neon connection string, then deploy.
+   `DATABASE_URL` = the Neon connection string, and `ADMIN_KEY` = a secret
+   only the host knows (required to create boards), then deploy.
 
 `vercel.json` routes every request to the FastAPI app in `api/index.py`.

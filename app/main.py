@@ -1,10 +1,12 @@
+import os
 import random
+import secrets
 import string
 import time
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -14,6 +16,7 @@ from .taste import GENRES, QUIZ, score_quiz
 
 DEEZER = "https://api.deezer.com"
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 
 app = FastAPI(title="Karaoke Song Board")
 
@@ -80,7 +83,11 @@ def new_code() -> str:
 
 
 @app.post("/api/rooms")
-def create_room(body: RoomIn):
+def create_room(body: RoomIn, x_admin_key: str = Header(default="")):
+    if not ADMIN_KEY:
+        raise HTTPException(403, "Board creation is disabled (ADMIN_KEY not configured)")
+    if not secrets.compare_digest(x_admin_key, ADMIN_KEY):
+        raise HTTPException(403, "Wrong host key")
     with db() as conn:
         for _ in range(10):
             code = new_code()
